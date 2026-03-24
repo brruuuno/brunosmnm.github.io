@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bruno's MnM</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top, #1a1a1a, #0d0d0d);
+  color: white;
+}
+
+header {
+  text-align: center;
+  padding: 25px;
+  font-size: 34px;
+  font-weight: bold;
+  background: linear-gradient(90deg, #ff3c3c, #1db954);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  border-radius: 8px;
+  border: none;
+  background: #222;
+  color: white;
+}
+
+button {
+  background: linear-gradient(90deg, #ff3c3c, #1db954);
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+}
+
+.review {
+  display: flex;
+  gap: 15px;
+}
+
+.review img {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+}
+
+.rating {
+  color: gold;
+}
+
+.top {
+  border-left: 4px solid gold;
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>Bruno's MnM 🎬🎧</header>
+
+<div class="container">
+
+<div class="card">
+  <h3>Add Review</h3>
+
+  <select id="type">
+    <option value="music">Music</option>
+    <option value="movie">Movie</option>
+  </select>
+
+  <input id="title" placeholder="Title">
+  <input id="creator" placeholder="Artist / Director">
+  <input id="image" placeholder="Image URL">
+  <textarea id="text" placeholder="Your thoughts"></textarea>
+  <input id="rating" type="number" placeholder="Rating 1-10">
+
+  <button onclick="add()">Post</button>
+</div>
+
+<div class="card">
+  <input id="search" placeholder="🔍 Search..." oninput="render()">
+  
+  <select id="filter" onchange="render()">
+    <option value="all">All</option>
+    <option value="music">Music</option>
+    <option value="movie">Movies</option>
+  </select>
+</div>
+
+<div class="card">
+  <h3>🏆 Top Rated</h3>
+  <div id="top"></div>
+</div>
+
+<div id="list"></div>
+
+</div>
+
+<script>
+function add() {
+  const r = {
+    type: type.value,
+    title: title.value,
+    creator: creator.value,
+    image: image.value,
+    text: text.value,
+    rating: Number(rating.value)
+  };
+
+  let data = JSON.parse(localStorage.getItem("mnm")) || [];
+  data.push(r);
+  localStorage.setItem("mnm", JSON.stringify(data));
+  render();
+}
+
+function render() {
+  let data = JSON.parse(localStorage.getItem("mnm")) || [];
+  const search = document.getElementById("search").value.toLowerCase();
+  const filter = document.getElementById("filter").value;
+
+  data = data.filter(r =>
+    (r.title.toLowerCase().includes(search)) &&
+    (filter === "all" || r.type === filter)
+  );
+
+  data.sort((a,b) => b.rating - a.rating);
+
+  const list = document.getElementById("list");
+  const top = document.getElementById("top");
+
+  list.innerHTML = "";
+  top.innerHTML = "";
+
+  data.forEach((r,i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <div class="review">
+        <img src="${r.image || 'https://via.placeholder.com/80'}">
+        <div>
+          <h3>${r.title}</h3>
+          <div>${r.creator}</div>
+          <div class="rating">⭐ ${r.rating}/10</div>
+          <p>${r.text}</p>
+        </div>
+      </div>
+    `;
+
+    list.appendChild(div);
+
+    if (i < 3) {
+      const t = document.createElement("div");
+      t.className = "top";
+      t.innerText = `${r.title} ⭐ ${r.rating}`;
+      top.appendChild(t);
+    }
+  });
+}
+
+render();
+</script>
+
+</body>
+</html>
